@@ -23,7 +23,7 @@
         <h2>Acesso Restrito</h2>
         <p>Por favor, insira seu código de acesso (token) para continuar.</p>
         <input type="text" id="tokenInput" placeholder="Seu token aqui">
-        <button id="validateButton" onclick="validateToken()">Validar e Continuar.2</button>
+        <button id="validateButton" onclick="validateToken()">Validar e Continuar.3  </button>
         <div id="message"></div>
     </div>
 
@@ -58,13 +58,13 @@
 
                 const result = await response.json();
 
-                if (response.ok && result.valid) {
+                if (response.ok && 'true'== result.status) {
                     messageDiv.className = 'success';
                     messageDiv.textContent = 'Token válido! Redirecionando...';
                     // Redireciona para o formulário Fillout, passando o token na URL
                     window.location.href = `${FILLOUT_FORM_URL}?token=${encodeURIComponent(token)}`;
                 } else {
-                    throw new Error(result.reason || 'Token inválido.');
+                    throw new Error(result.Motivo || 'Token inválido.');
                 }
 
             } catch (error) {
