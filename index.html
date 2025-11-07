@@ -39,6 +39,7 @@
 
         async function validateToken() {
             const token = tokenInput.value.trim();
+            const tokenSemHifen = token.replace(/-/g, '');
             if (!token) {
                 messageDiv.className = 'error';
                 messageDiv.textContent = 'O campo de token não pode estar vazio.';
@@ -53,7 +54,7 @@
                 const response = await fetch(N8N_WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token: token })
+                    body: JSON.stringify({ token: tokenSemHifen })
                 });
 
                 const result = await response.json();
@@ -62,7 +63,7 @@
                     messageDiv.className = 'success';
                     messageDiv.textContent = 'Token válido! Redirecionando...';
                     // Redireciona para o formulário Fillout, passando o token na URL
-                    window.location.href = `${FILLOUT_FORM_URL}?token=${encodeURIComponent(token)}`;
+                    window.location.href = `${FILLOUT_FORM_URL}?token=${encodeURIComponent(tokenSemHifen)}`;
                 } else {
                     throw new Error(result.Motivo || 'Token inválido.');
                 }
