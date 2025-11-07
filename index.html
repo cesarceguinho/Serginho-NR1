@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validação de Acesso</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f5f7; margin: 0; }
+        .container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; max-width: 400px; width: 90%; }
+        h2 { margin-top: 0; color: #172B4D; }
+        p { color: #5E6C84; }
+        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #DFE1E6; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #0052CC; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; width: 100%; transition: background-color 0.2s; }
+        button:disabled { background-color: #A5ADBA; cursor: not-allowed; }
+        button:hover:not(:disabled) { background-color: #0065FF; }
+        #message { margin-top: 15px; font-weight: 500; }
+        .error { color: #DE350B; }
+        .success { color: #00875A; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Acesso Restrito</h2>
+        <p>Por favor, insira seu código de acesso (token) para continuar.</p>
+        <input type="text" id="tokenInput" placeholder="Seu token aqui">
+        <button id="validateButton" onclick="validateToken()">Validar e Continuar</button>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // --- CONFIGURE AQUI ---
+        const N8N_WEBHOOK_URL = 'https://SEU-DOMINIO.n8n.cloud/webhook/validate-token'; // <-- SUBSTITUA PELA SUA URL DE PRODUÇÃO DO N8N
+        const FILLOUT_FORM_URL = 'https://fillout.com/t/SEU-FORM-ID'; // <-- SUBSTITUA PELA URL DO SEU FORMULÁRIO FILLOUT
+        // --------------------
+
+        const tokenInput = document.getElementById('tokenInput');
+        const validateButton = document.getElementById('validateButton');
+        const messageDiv = document.getElementById('message');
+
+        async function validateToken() {
+            const token = tokenInput.value.trim();
+            if (!token) {
+                messageDiv.className = 'error';
+                messageDiv.textContent = 'O campo de token não pode estar vazio.';
+                return;
+            }
+
+            validateButton.disabled = true;
+            validateButton.textContent = 'Validando...';
+            messageDiv.textContent = '';
+
+            try {
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.valid) {
+                    messageDiv.className = 'success';
+                    messageDiv.textContent = 'Token válido! Redirecionando...';
+                    // Redireciona para o formulário Fillout, passando o token na URL
+                    window.location.href = `${FILLOUT_FORM_URL}?token=${encodeURIComponent(token)}`;
+                } else {
+                    throw new Error(result.reason || 'Token inválido.');
+                }
+
+            } catch (error) {
+                messageDiv.className = 'error';
+                messageDiv.textContent = error.message;
+                validateButton.disabled = false;
+                validateButton.textContent = 'Validar e Continuar';
+            }
+        }
+
+        // Permite validar pressionando Enter
+        tokenInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                validateButton.click();
+            }
+        });
+    </script>
+</body>
+</html>
